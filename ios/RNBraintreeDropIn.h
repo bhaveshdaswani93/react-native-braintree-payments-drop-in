@@ -1,20 +1,22 @@
-Pod::Spec.new do |s|
-  s.name         = "RNBraintreeDropIn"
-  s.version      = "1.0.0"
-  s.summary      = "RNBraintreeDropIn"
-  s.description  = <<-DESC
-                  RNBraintreeDropIn
-                   DESC
-  s.homepage     = "https://github.com/bamlab/react-native-braintree-payments-drop-in"
-  s.license      = "MIT"
-  # s.license      = { :type => "MIT", :file => "../LICENSE" }
-  s.author             = { "author" => "lagrange.louis@gmail.com" }
-  s.platform     = :ios, "9.0"
-  s.source       = { :git => "https://github.com/bamlab/react-native-braintree-payments-drop-in.git", :tag => "master" }
-  s.source_files  = "*.{h,m}"
-  s.requires_arc = true
+#if __has_include("RCTBridgeModule.h")
+#import "RCTBridgeModule.h"
+#else
+#import <React/RCTBridgeModule.h>
+#endif
 
-  s.dependency "React"
-  s.dependency "BraintreeDropIn","7.5.0"
-  s.dependency "Braintree/Apple-Pay","4.30.2"
-end
+#import "BraintreeCore.h"
+#import "BraintreeDropIn.h"
+#import "BTCardNonce.h"
+@import PassKit;
+#import "BraintreeApplePay.h"
+
+@interface RNBraintreeDropIn : NSObject <RCTBridgeModule, PKPaymentAuthorizationViewControllerDelegate>
+
+@property (nonatomic, strong) UIViewController* _Nonnull reactRoot;
+@property (nonatomic, strong) BTApplePayClient *applePayClient;
+@property (nonatomic, strong) RCTPromiseResolveBlock _Nonnull resolve;
+@property (nonatomic, strong) NSString* applePayAmout;
+
++ (void)resolvePayment:(BTDropInResult* _Nullable)result resolver:(RCTPromiseResolveBlock _Nonnull)resolve;
+
+@end

@@ -12,7 +12,8 @@ RCT_REMAP_METHOD(show,
                  showWithOptions:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     self.resolve = resolve;
-    
+    self.reject = reject;
+    self.promiseResolved = false;
     NSString* clientToken = options[@"clientToken"];
     if (!clientToken) {
         reject(@"NO_CLIENT_TOKEN", @"You must provide a client token", nil);
@@ -50,7 +51,7 @@ RCT_REMAP_METHOD(show,
             if (error != nil) {
                 reject(error.localizedDescription, error.localizedDescription, error);
             } else if (result.cancelled) {
-                reject(@"USER_CANCELLATION", @"The user cancelled", nil);
+                reject(@"USER_CANCELLATION", @"Der Benutzer hat die Transaktion abgebrochen.", nil);
             } else {
                 if (result.paymentOptionType == BTUIKPaymentOptionTypeApplePay) {
                     [self tappedApplePayButton];
@@ -113,6 +114,8 @@ RCT_REMAP_METHOD(show,
         viewController.delegate = self;
 
         [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:viewController animated:YES completion:nil];
+       // [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:viewController animated:YES completion:<#^(void)completion#>]
+    
     }];
 }
 
@@ -122,6 +125,12 @@ RCT_REMAP_METHOD(show,
     [self.applePayClient tokenizeApplePayPayment:payment
                                  completion:^(BTApplePayCardNonce *tokenizedApplePayPayment,
                                               NSError *error) {
+        self.promiseResolved = true;
+
+        if (error != nil)
+        {
+            NSLog(error.localizedDescription);
+        }
         if (tokenizedApplePayPayment) {
             // On success, send nonce to your server for processing.
             NSLog(@"nonce = %@", tokenizedApplePayPayment.nonce);
@@ -136,12 +145,27 @@ RCT_REMAP_METHOD(show,
         } else {
             // Indicate failure via the completion callback:
             completion(PKPaymentAuthorizationStatusFailure);
+            self.reject(@"APPLE_CANCELLATION", @"Fehler von Apple Pay.", nil);
         }
     }];
 }
-
+//
 - (void)paymentAuthorizationViewControllerDidFinish:(PKPaymentAuthorizationViewController *)controller {
+
+
     [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
+    if (self.promiseResolved == false)
+    {
+        self.reject(@"USER_CANCELLATION", @"Der Benutzer hat die Transaktion abgebrochen.", nil);
+    }
 }
+
+//- (void)paymentAuthorizationViewControllerDidFinish:(PKPaymentAuthorizationViewController *)controller {
+//    [controller dismissViewControllerAnimated:YES completion:^{
+//        NSLog(@"completely dismissed");
+//
+//    }];
+//}
+
 
 @end

@@ -15,6 +15,9 @@
 @property (nonatomic, strong) UIViewController* _Nonnull reactRoot;
 @property (nonatomic, strong) BTApplePayClient *applePayClient;
 @property (nonatomic, strong) RCTPromiseResolveBlock _Nonnull resolve;
+@property (nonatomic, strong) RCTPromiseRejectBlock _Nonnull reject;
+@property (nonatomic) Boolean promiseResolved;
+
 @property (nonatomic, strong) NSString* applePayAmout;
 
 + (void)resolvePayment:(BTDropInResult* _Nullable)result resolver:(RCTPromiseResolveBlock _Nonnull)resolve;
